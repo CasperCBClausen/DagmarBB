@@ -33,6 +33,7 @@ jobs:
         run: pnpm build:web
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_BASE_PATH: ${{ secrets.VITE_BASE_PATH }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
