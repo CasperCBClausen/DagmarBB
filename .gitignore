@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+.turbo/
+apps/web/dist/
+apps/api/dist/
+coverage/
+.expo/
+.claude/

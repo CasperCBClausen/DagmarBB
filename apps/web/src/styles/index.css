@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme definitions */
+[data-theme="half-timbered"] {
+  --color-bg: #FAFAF8;
+  --color-surface: #FFFFFF;
+  --color-primary: #7A3B1E;
+  --color-accent: #B8924A;
+  --color-text: #1C1C1C;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+[data-theme="cathedral"] {
+  --color-bg: #F9F9F9;
+  --color-surface: #FFFFFF;
+  --color-primary: #26375A;
+  --color-accent: #A07E28;
+  --color-text: #1A1A1A;
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+}
+
+[data-theme="nordic"] {
+  --color-bg: #F8F9F7;
+  --color-surface: #FFFFFF;
+  --color-primary: #3D5E38;
+  --color-accent: #6A95A8;
+  --color-text: #1A1A1A;
+  --font-heading: 'Lora', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+}
+
+[data-theme="amber-evening"] {
+  --color-bg: #FAF8F5;
+  --color-surface: #FFFFFF;
+  --color-primary: #5C2230;
+  --color-accent: #C07848;
+  --color-text: #1A1A1A;
+  --font-heading: 'Cinzel', Georgia, serif;
+  --font-body: 'Raleway', system-ui, sans-serif;
+}
+
+[data-theme="river-mist"] {
+  --color-bg: #F7F9F8;
+  --color-surface: #FFFFFF;
+  --color-primary: #2E4E45;
+  --color-accent: #7AADA0;
+  --color-text: #1A1A1A;
+  --font-heading: 'Spectral', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-accent);
+  opacity: 0.4;
+  margin: 2rem 0;
+}
+
+/* Button base */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.625rem 1.5rem;
+  border-radius: 4px;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary:hover {
+  opacity: 0.88;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  padding: 0.5625rem 1.4375rem;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Form inputs */
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: border-color 0.15s ease;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+}
+
+/* Card */
+.card {
+  background: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.07);
+  overflow: hidden;
+}

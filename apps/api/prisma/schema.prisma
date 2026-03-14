@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CLEANER
+  GUEST
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  MOBILEPAY
+  FLATPAY
+}
+
+enum PaymentStatus {
+  PENDING
+  CAPTURED
+  REFUNDED
+  FAILED
+}
+
+enum CleaningState {
+  CLEAN
+  NEEDS_CLEANING
+  IN_PROGRESS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(GUEST)
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cleaningLogs CleaningLog[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Room {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  description    String
+  pricePerNight  Float
+  maxGuests      Int      @default(2)
+  amenities      String[]
+  images         String[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bookings       Booking[]
+  cleaningStatus CleaningStatus?
+  cleaningLogs   CleaningLog[]
+  closedPeriods  ClosedPeriod[]
+  qrCode         RoomQRCode?
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  bookingRef  String        @unique
+  roomId      String
+  room        Room          @relation(fields: [roomId], references: [id])
+  guestName   String
+  guestEmail  String
+  guestPhone  String?
+  checkIn     DateTime
+  checkOut    DateTime
+  nights      Int
+  totalPrice  Float
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  payment     Payment?
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  bookingId         String        @unique
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  amount            Float
+  providerPaymentId String?
+  providerMetadata  Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model CleaningStatus {
+  roomId    String        @id
+  room      Room          @relation(fields: [roomId], references: [id])
+  state     CleaningState @default(NEEDS_CLEANING)
+  updatedAt DateTime      @updatedAt
+}
+
+model CleaningLog {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  method    String
+  createdAt DateTime @default(now())
+}
+
+model ClosedPeriod {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model RoomQRCode {
+  roomId    String   @id
+  room      Room     @relation(fields: [roomId], references: [id])
+  token     String   @unique
+  qrDataUrl String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

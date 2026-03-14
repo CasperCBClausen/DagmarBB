@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Dagmar B&B Admin",
+    "slug": "dagmar-bb-admin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#7A3B1E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dk.dagmarbb.admin"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#7A3B1E"
+      },
+      "package": "dk.dagmarbb.admin"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Dagmar B&B bruger kameraet til at scanne rengørings-QR-koder."
+        }
+      ]
+    ],
+    "scheme": "dagmarbb"
+  }
+}
