@@ -1,4 +1,4 @@
-import { Booking } from '@prisma/client';
+import type { Booking } from '@prisma/client';
 
 const MOBILEPAY_CLIENT_ID = process.env.MOBILEPAY_CLIENT_ID || '';
 const MOBILEPAY_CLIENT_SECRET = process.env.MOBILEPAY_CLIENT_SECRET || '';

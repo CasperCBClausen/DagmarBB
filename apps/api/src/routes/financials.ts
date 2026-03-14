@@ -13,15 +13,15 @@ export async function financialRoutes(fastify: FastifyInstance) {
       prisma.room.findMany({ where: { isActive: true } }),
     ]);
 
-    const totalRevenue = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
+    const totalRevenue = bookings.reduce((sum: number, b) => sum + b.totalPrice, 0);
     const totalBookings = bookings.length;
-    const averageStay = totalBookings > 0 ? bookings.reduce((sum, b) => sum + b.nights, 0) / totalBookings : 0;
+    const averageStay = totalBookings > 0 ? bookings.reduce((sum: number, b) => sum + b.nights, 0) / totalBookings : 0;
 
     // Occupancy rate (last 365 days)
     const yearAgo = new Date();
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
     const recentBookings = bookings.filter(b => b.checkIn >= yearAgo);
-    const occupiedNights = recentBookings.reduce((sum, b) => sum + b.nights, 0);
+    const occupiedNights = recentBookings.reduce((sum: number, b) => sum + b.nights, 0);
     const totalPossibleNights = rooms.length * 365;
     const occupancyRate = totalPossibleNights > 0 ? (occupiedNights / totalPossibleNights) * 100 : 0;
 
@@ -39,7 +39,7 @@ export async function financialRoutes(fastify: FastifyInstance) {
       revenueByMonth.push({
         year,
         month,
-        revenue: monthBookings.reduce((sum, b) => sum + b.totalPrice, 0),
+        revenue: monthBookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
         bookings: monthBookings.length,
       });
     }
@@ -47,8 +47,8 @@ export async function financialRoutes(fastify: FastifyInstance) {
     // Revenue by room
     const revenueByRoom = rooms.map(room => {
       const roomBookings = bookings.filter(b => b.roomId === room.id);
-      const revenue = roomBookings.reduce((sum, b) => sum + b.totalPrice, 0);
-      const roomOccupied = roomBookings.reduce((sum, b) => sum + b.nights, 0);
+      const revenue = roomBookings.reduce((sum: number, b) => sum + b.totalPrice, 0);
+      const roomOccupied = roomBookings.reduce((sum: number, b) => sum + b.nights, 0);
       return {
         roomId: room.id,
         roomName: room.name,
@@ -82,7 +82,7 @@ export async function financialRoutes(fastify: FastifyInstance) {
       return {
         year: targetYear,
         month,
-        revenue: monthBookings.reduce((sum, b) => sum + b.totalPrice, 0),
+        revenue: monthBookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
         bookings: monthBookings.length,
       };
     });
@@ -122,9 +122,9 @@ export async function financialRoutes(fastify: FastifyInstance) {
     return rooms.map(room => ({
       roomId: room.id,
       roomName: room.name,
-      revenue: room.bookings.reduce((sum, b) => sum + b.totalPrice, 0),
+      revenue: room.bookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
       bookings: room.bookings.length,
-      occupancyRate: (room.bookings.reduce((sum, b) => sum + b.nights, 0) / 365) * 100,
+      occupancyRate: (room.bookings.reduce((sum: number, b) => sum + b.nights, 0) / 365) * 100,
     }));
   });
 }

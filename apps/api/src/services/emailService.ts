@@ -1,4 +1,4 @@
-import { Booking } from '@prisma/client';
+import type { Booking } from '@prisma/client';
 
 export async function sendBookingConfirmation(booking: Booking & { room?: any }): Promise<void> {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;

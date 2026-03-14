@@ -1,4 +1,4 @@
-import { Booking } from '@prisma/client';
+import type { Booking } from '@prisma/client';
 
 const FLATPAY_API_KEY = process.env.FLATPAY_API_KEY || '';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
