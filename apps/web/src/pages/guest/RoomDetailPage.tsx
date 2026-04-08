@@ -9,13 +9,20 @@ export default function RoomDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const [room, setRoom] = React.useState<Room | null>(null);
+  const [bookingMode, setBookingMode] = React.useState<'manual' | 'autonomous'>('manual');
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
 
   React.useEffect(() => {
     if (!slug) return;
-    apiClient.get<Room>(`/rooms/${slug}`)
-      .then(r => setRoom(r.data))
+    Promise.all([
+      apiClient.get<Room>(`/rooms/${slug}`),
+      apiClient.get<{ bookingMode: 'manual' | 'autonomous' }>('/settings'),
+    ])
+      .then(([roomRes, settingsRes]) => {
+        setRoom(roomRes.data);
+        setBookingMode(settingsRes.data.bookingMode);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -26,13 +33,11 @@ export default function RoomDetailPage() {
   return (
     <Layout>
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '3rem 1rem' }}>
-        {/* Back link */}
         <Link to="/rooms" style={{ color: 'var(--color-accent)', fontSize: '0.875rem', marginBottom: '1.5rem', display: 'inline-block' }}>
           ← {t('rooms.title')}
         </Link>
 
         <div className="card" style={{ overflow: 'hidden', marginTop: '1rem' }}>
-          {/* Image placeholder */}
           <div style={{ height: '360px', backgroundColor: 'var(--color-accent)', opacity: 0.2 }} />
 
           <div style={{ padding: '2.5rem' }}>
@@ -44,10 +49,6 @@ export default function RoomDetailPage() {
                 <p style={{ color: '#888', fontSize: '0.875rem' }}>{t('rooms.max_guests', { count: room.maxGuests })}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--color-primary)' }}>
-                  {room.pricePerNight.toLocaleString('da-DK')} DKK
-                </div>
-                <div style={{ color: '#888', fontSize: '0.875rem' }}>/ {t('rooms.per_night')}</div>
               </div>
             </div>
 
@@ -71,9 +72,15 @@ export default function RoomDetailPage() {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <Link to={`/book/${room.slug}`} className="btn-primary" style={{ fontSize: '1.0625rem', padding: '0.875rem 2rem' }}>
-                {t('rooms.book_now')}
-              </Link>
+              {bookingMode === 'manual' ? (
+                <Link to="/about" className="btn-primary" style={{ fontSize: '1.0625rem', padding: '0.875rem 2rem' }}>
+                  {t('rooms.book_now')}
+                </Link>
+              ) : (
+                <Link to={`/book/${room.slug}`} className="btn-primary" style={{ fontSize: '1.0625rem', padding: '0.875rem 2rem' }}>
+                  {t('rooms.book_now')}
+                </Link>
+              )}
             </div>
           </div>
         </div>

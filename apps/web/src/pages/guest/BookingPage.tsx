@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/Layout';
 import { apiClient } from '../../hooks/useApi';
@@ -10,6 +10,7 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [room, setRoom] = React.useState<Room | null>(null);
+  const [bookingMode, setBookingMode] = React.useState<'manual' | 'autonomous'>('manual');
   const [loading, setLoading] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -29,13 +30,18 @@ export default function BookingPage() {
 
   React.useEffect(() => {
     if (!roomSlug) return;
-    apiClient.get<Room>(`/rooms/${roomSlug}`)
-      .then(r => setRoom(r.data))
+    Promise.all([
+      apiClient.get<Room>(`/rooms/${roomSlug}`),
+      apiClient.get<{ bookingMode: 'manual' | 'autonomous' }>('/settings'),
+    ])
+      .then(([roomRes, settingsRes]) => {
+        setRoom(roomRes.data);
+        setBookingMode(settingsRes.data.bookingMode);
+      })
       .finally(() => setLoading(false));
   }, [roomSlug]);
 
   const nights = Math.max(0, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / 86400000));
-  const total = room ? nights * room.pricePerNight : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +50,6 @@ export default function BookingPage() {
     setError(null);
 
     try {
-      // Create booking
       const bookingRes = await apiClient.post<Booking>('/bookings', {
         roomId: room.id,
         ...form,
@@ -52,7 +57,6 @@ export default function BookingPage() {
 
       const booking = bookingRes.data;
 
-      // Initiate payment
       const endpoint = form.paymentMethod === 'MOBILEPAY' ? '/payments/mobilepay/initiate' : '/payments/flatpay/initiate';
       const payRes = await apiClient.post<{ redirectUrl: string }>(endpoint, { bookingId: booking.id });
 
@@ -65,6 +69,40 @@ export default function BookingPage() {
 
   if (loading) return <Layout><div style={{ padding: '8rem', textAlign: 'center' }}>{t('common.loading')}</div></Layout>;
   if (!room) return <Layout><div style={{ padding: '8rem', textAlign: 'center' }}>{t('common.error')}</div></Layout>;
+
+  // Manual mode — show contact card instead of booking form
+  if (bookingMode === 'manual') {
+    return (
+      <Layout>
+        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '4rem 1rem', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.875rem', color: 'var(--color-primary)', marginBottom: '1rem' }}>
+            {room.name}
+          </h1>
+          <div className="card" style={{ padding: '2.5rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✉️</div>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.375rem', marginBottom: '0.75rem' }}>
+              {t('booking.contact_mode_title')}
+            </h2>
+            <p style={{ color: '#666', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+              {t('booking.contact_mode_text')}
+            </p>
+            <a
+              href={`mailto:${t('booking.contact_email')}?subject=Booking inquiry — ${room.name}`}
+              className="btn-primary"
+              style={{ fontSize: '1rem', padding: '0.875rem 2rem', display: 'inline-block', textDecoration: 'none' }}
+            >
+              {t('booking.contact_email')}
+            </a>
+            <div style={{ marginTop: '1.5rem' }}>
+            </div>
+          </div>
+          <Link to="/rooms" style={{ display: 'inline-block', marginTop: '1.5rem', color: 'var(--color-accent)', fontSize: '0.875rem' }}>
+            ← {t('rooms.title')}
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -158,12 +196,8 @@ export default function BookingPage() {
             <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1rem', fontSize: '1.0625rem' }}>{room.name}</h3>
             <hr />
             <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>
-              {room.pricePerNight.toLocaleString('da-DK')} DKK × {nights} {t(nights === 1 ? 'booking.nights' : 'booking.nights_plural', { count: nights })}
+              {nights} {t(nights === 1 ? 'booking.nights' : 'booking.nights_plural', { count: nights })}
             </div>
-            <div style={{ fontSize: '1.375rem', fontWeight: 600, color: 'var(--color-primary)' }}>
-              {total.toLocaleString('da-DK')} DKK
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.25rem' }}>{t('booking.total')}</div>
           </div>
         </div>
       </div>

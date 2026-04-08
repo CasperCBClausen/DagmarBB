@@ -19,6 +19,7 @@ enum BookingStatus {
   CHECKED_IN
   CHECKED_OUT
   CANCELLED
+  CUSTOMER_CANCELLED
   NO_SHOW
 }
 
@@ -40,6 +41,12 @@ enum CleaningState {
   IN_PROGRESS
 }
 
+model SiteSettings {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -50,7 +57,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  cleaningLogs CleaningLog[]
+  cleaningLogs  CleaningLog[]
   refreshTokens RefreshToken[]
 }
 
@@ -63,44 +70,105 @@ model RefreshToken {
   createdAt DateTime @default(now())
 }
 
-model Room {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  name           String
-  description    String
-  pricePerNight  Float
-  maxGuests      Int      @default(2)
-  amenities      String[]
-  images         String[]
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model RoomCategory {
+  id              String               @id @default(cuid())
+  name            String               @unique
+  translations    Json                 @default("{}")
+  rooms           RoomRoomCategory[]
+  priceCategories PriceCategory[]
+  bookingRooms    BookingRoom[]
+  blockPeriods    BlockPeriodCategory[]
+  createdAt       DateTime             @default(now())
+}
 
-  bookings       Booking[]
-  cleaningStatus CleaningStatus?
-  cleaningLogs   CleaningLog[]
-  closedPeriods  ClosedPeriod[]
-  qrCode         RoomQRCode?
+model RoomRoomCategory {
+  roomId         String
+  roomCategoryId String
+  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomCategory   RoomCategory @relation(fields: [roomCategoryId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, roomCategoryId])
+}
+
+model Room {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  name          String
+  description   String
+  maxGuests     Int           @default(2)
+  amenities     String[]
+  images        String[]
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  roomCategories             RoomRoomCategory[]
+  bookings                   Booking[]        @relation("BookingRoom")
+  assignedBookings           Booking[]        @relation("AssignedRoom")
+  bookingRoomEntries         BookingRoom[]    @relation("BookingRoomRoom")
+  assignedBookingRoomEntries BookingRoom[]    @relation("BookingRoomAssigned")
+  cleaningStatus             CleaningStatus?
+  cleaningLogs               CleaningLog[]
+  closedPeriods              ClosedPeriod[]
+  qrCode                     RoomQRCode?
+  calendarSources            CalendarSourceRoom[]
 }
 
 model Booking {
-  id          String        @id @default(cuid())
-  bookingRef  String        @unique
-  roomId      String
-  room        Room          @relation(fields: [roomId], references: [id])
-  guestName   String
-  guestEmail  String
-  guestPhone  String?
-  checkIn     DateTime
-  checkOut    DateTime
-  nights      Int
-  totalPrice  Float
-  status      BookingStatus @default(PENDING)
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  bookingRef     String        @unique
+  roomId         String?
+  room           Room?         @relation("BookingRoom", fields: [roomId], references: [id])
+  assignedRoomId String?
+  assignedRoom   Room?         @relation("AssignedRoom", fields: [assignedRoomId], references: [id])
+  guestName      String
+  guestEmail     String
+  guestPhone     String?
+  checkIn        DateTime
+  checkOut       DateTime
+  nights         Int
+  totalPrice     Float
+  rateLabel      String?
+  isRefundable   Boolean       @default(true)
+  isAdminCreated Boolean       @default(false)
+  status         BookingStatus @default(PENDING)
+  notes           String?
+  discountCode    String?
+  discountPercent Float?
+  discountAmount  Float?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  payment     Payment?
+  payment      Payment?
+  bookingRooms BookingRoom[]
+  messages     BookingMessage[]
+}
+
+model BookingMessage {
+  id         String   @id @default(cuid())
+  bookingId  String
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  senderRole String
+  senderName String?
+  text       String
+  adminRead  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model BookingRoom {
+  id             String        @id @default(cuid())
+  bookingId      String
+  booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomCategoryId String?
+  roomCategory   RoomCategory? @relation(fields: [roomCategoryId], references: [id])
+  roomId         String?
+  room           Room?         @relation("BookingRoomRoom", fields: [roomId], references: [id])
+  assignedRoomId String?
+  assignedRoom   Room?         @relation("BookingRoomAssigned", fields: [assignedRoomId], references: [id])
+  pricePerNight  Float
+  subtotal       Float
+  rateLabel      String?
+  createdAt      DateTime      @default(now())
 }
 
 model Payment {
@@ -135,13 +203,16 @@ model CleaningLog {
 }
 
 model ClosedPeriod {
-  id        String   @id @default(cuid())
-  roomId    String
-  room      Room     @relation(fields: [roomId], references: [id])
-  startDate DateTime
-  endDate   DateTime
-  reason    String?
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id])
+  startDate       DateTime
+  endDate         DateTime
+  reason          String?
+  source          String   @default("manual")
+  externalUid     String?
+  roomCategoryIds String[] @default([])
+  createdAt       DateTime @default(now())
 }
 
 model RoomQRCode {
@@ -151,4 +222,116 @@ model RoomQRCode {
   qrDataUrl String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Charge {
+  id          String                @id @default(cuid())
+  name        String
+  amountDKK   Float
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  priceCategories PriceCategoryCharge[]
+}
+
+model PriceCategoryCharge {
+  priceCategoryId String
+  chargeId        String
+  priceCategory   PriceCategory @relation(fields: [priceCategoryId], references: [id], onDelete: Cascade)
+  charge          Charge        @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+
+  @@id([priceCategoryId, chargeId])
+}
+
+model PriceCategory {
+  id               String             @id @default(cuid())
+  name             String
+  roomCategoryId   String
+  roomCategory     RoomCategory       @relation(fields: [roomCategoryId], references: [id])
+  parentId         String?
+  parent           PriceCategory?     @relation("SubCategories", fields: [parentId], references: [id])
+  children         PriceCategory[]    @relation("SubCategories")
+  savingsPercent   Float?
+  serviceFeePercent Float             @default(0)
+  isRefundable     Boolean            @default(true)
+  days             PriceCategoryDay[]
+  charges          PriceCategoryCharge[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model PriceCategoryDay {
+  id                    String        @id @default(cuid())
+  categoryId            String
+  category              PriceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  date                  DateTime      @db.Date
+  pricePerNight         Float
+  arrivalAllowed        Boolean       @default(true)
+  departureAllowed      Boolean       @default(true)
+  minAdvanceBookingDays Int           @default(0)
+  minStayNights         Int           @default(1)
+  cancellationDays      Int           @default(0)
+  isCustom              Boolean       @default(false)
+
+  @@unique([categoryId, date])
+}
+
+model CalendarSource {
+  id        String               @id @default(cuid())
+  name      String
+  feedUrl   String
+  rooms     CalendarSourceRoom[]
+  lastSync  DateTime?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model CalendarSourceRoom {
+  sourceId String
+  roomId   String
+  source   CalendarSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  room     Room           @relation(fields: [roomId], references: [id])
+
+  @@id([sourceId, roomId])
+}
+
+model BlockPeriod {
+  id         String               @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?
+  categories BlockPeriodCategory[]
+  createdAt  DateTime             @default(now())
+}
+
+model BlockPeriodCategory {
+  blockPeriodId  String
+  roomCategoryId String
+  blockPeriod    BlockPeriod  @relation(fields: [blockPeriodId], references: [id], onDelete: Cascade)
+  roomCategory   RoomCategory @relation(fields: [roomCategoryId], references: [id], onDelete: Cascade)
+
+  @@id([blockPeriodId, roomCategoryId])
+}
+
+model HouseRule {
+  id           String   @id @default(cuid())
+  text         String
+  sortOrder    Int      @default(0)
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+}
+
+model DiscountCode {
+  id              String   @id @default(cuid())
+  type            String   // 'MULTI' | 'SINGLE'
+  code            String   @unique
+  name            String?
+  batchId         String?
+  discountPercent Float
+  validFrom       DateTime
+  validTo         DateTime
+  usageCount      Int      @default(0)
+  status          String   @default("FREE") // FREE | HANDED | USED (single-use only)
+  usedByBookingId String?
+  createdAt       DateTime @default(now())
 }

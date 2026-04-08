@@ -75,11 +75,14 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         await prisma.booking.update({ where: { id: payment.bookingId }, data: { status: 'CONFIRMED' } });
 
         // Schedule cleaning after checkout
-        await prisma.cleaningStatus.upsert({
-          where: { roomId: payment.booking.roomId },
-          update: {},
-          create: { roomId: payment.booking.roomId, state: 'CLEAN' },
-        });
+        const roomIdForCleaning = payment.booking.roomId;
+        if (roomIdForCleaning) {
+          await prisma.cleaningStatus.upsert({
+            where: { roomId: roomIdForCleaning },
+            update: {},
+            create: { roomId: roomIdForCleaning, state: 'CLEAN' },
+          });
+        }
 
         await sendBookingConfirmation(payment.booking);
       }

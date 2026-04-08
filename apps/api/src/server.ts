@@ -9,6 +9,15 @@ import { bookingRoutes } from './routes/bookings';
 import { paymentRoutes } from './routes/payments';
 import { financialRoutes } from './routes/financials';
 import { cleaningRoutes } from './routes/cleaning';
+import { settingsRoutes } from './routes/settings';
+import { icalRoutes } from './routes/ical';
+import { priceCategoryRoutes } from './routes/priceCategories';
+import { availabilityRoutes } from './routes/availability';
+import { roomCategoryRoutes } from './routes/roomCategories';
+import { chargeRoutes } from './routes/charges';
+import { blockPeriodRoutes } from './routes/blockPeriods';
+import { houseRuleRoutes } from './routes/houseRules';
+import { discountCodeRoutes } from './routes/discountCodes';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
@@ -68,6 +77,15 @@ async function start() {
   await fastify.register(paymentRoutes, { prefix: '/api/v1/payments' });
   await fastify.register(financialRoutes, { prefix: '/api/v1/financials' });
   await fastify.register(cleaningRoutes, { prefix: '/api/v1/cleaning' });
+  await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
+  await fastify.register(icalRoutes, { prefix: '/api/v1/ical' });
+  await fastify.register(priceCategoryRoutes, { prefix: '/api/v1/price-categories' });
+  await fastify.register(availabilityRoutes, { prefix: '/api/v1/availability' });
+  await fastify.register(roomCategoryRoutes, { prefix: '/api/v1/room-categories' });
+  await fastify.register(chargeRoutes, { prefix: '/api/v1/charges' });
+  await fastify.register(blockPeriodRoutes, { prefix: '/api/v1/block-periods' });
+  await fastify.register(houseRuleRoutes, { prefix: '/api/v1/house-rules' });
+  await fastify.register(discountCodeRoutes, { prefix: '/api/v1/discount-codes' });
 
   try {
     await fastify.listen({ port: PORT, host: '0.0.0.0' });

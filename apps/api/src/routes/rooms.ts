@@ -8,40 +8,45 @@ const createRoomSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
   description: z.string().min(1),
-  pricePerNight: z.number().positive(),
   maxGuests: z.number().int().positive(),
   amenities: z.array(z.string()).optional().default([]),
   images: z.array(z.string()).optional().default([]),
+  categoryIds: z.array(z.string()).optional().default([]),
 });
 
 const updateRoomSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  pricePerNight: z.number().positive().optional(),
   maxGuests: z.number().int().positive().optional(),
   amenities: z.array(z.string()).optional(),
   images: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
+  categoryIds: z.array(z.string()).optional(),
 });
 
 export async function roomRoutes(fastify: FastifyInstance) {
+  const roomInclude = {
+    roomCategories: { include: { roomCategory: true } },
+  };
+
   // GET /rooms — public
   fastify.get('/', async () => {
     return prisma.room.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'asc' },
+      include: roomInclude,
     });
   });
 
   // GET /rooms/all — admin only (includes inactive)
-  fastify.get('/all', { preHandler: [requireAdmin] }, async (request) => {
-    return prisma.room.findMany({ orderBy: { createdAt: 'asc' } });
+  fastify.get('/all', { preHandler: [requireAdmin] }, async () => {
+    return prisma.room.findMany({ orderBy: { createdAt: 'asc' }, include: roomInclude });
   });
 
   // GET /rooms/:slug
   fastify.get('/:slug', async (request, reply) => {
     const { slug } = request.params as { slug: string };
-    const room = await prisma.room.findUnique({ where: { slug } });
+    const room = await prisma.room.findUnique({ where: { slug }, include: roomInclude });
     if (!room) return reply.status(404).send({ error: 'Room not found' });
     return room;
   });
@@ -112,7 +117,16 @@ export async function roomRoutes(fastify: FastifyInstance) {
     const existing = await prisma.room.findUnique({ where: { slug: body.data.slug } });
     if (existing) return reply.status(409).send({ error: 'Room with this slug already exists' });
 
-    const room = await prisma.room.create({ data: body.data });
+    const { categoryIds, ...roomData } = body.data;
+    const room = await prisma.room.create({
+      data: {
+        ...roomData,
+        roomCategories: categoryIds.length
+          ? { create: categoryIds.map(id => ({ roomCategoryId: id })) }
+          : undefined,
+      },
+      include: roomInclude,
+    });
     await prisma.cleaningStatus.create({ data: { roomId: room.id, state: 'CLEAN' } });
     return reply.status(201).send(room);
   });
@@ -123,7 +137,20 @@ export async function roomRoutes(fastify: FastifyInstance) {
     const body = updateRoomSchema.safeParse(request.body);
     if (!body.success) return reply.status(400).send({ error: 'Invalid input', details: body.error.issues });
 
-    const room = await prisma.room.update({ where: { id }, data: body.data });
+    const { categoryIds, ...roomData } = body.data;
+    const room = await prisma.room.update({
+      where: { id },
+      data: {
+        ...roomData,
+        ...(categoryIds !== undefined ? {
+          roomCategories: {
+            deleteMany: {},
+            create: categoryIds.map(catId => ({ roomCategoryId: catId })),
+          },
+        } : {}),
+      },
+      include: roomInclude,
+    });
     return room;
   });
 
@@ -159,6 +186,7 @@ export async function roomRoutes(fastify: FastifyInstance) {
       startDate: z.string(),
       endDate: z.string(),
       reason: z.string().optional(),
+      roomCategoryIds: z.array(z.string()).optional().default([]),
     });
     const body = schema.safeParse(request.body);
     if (!body.success) return reply.status(400).send({ error: 'Invalid input' });
@@ -169,6 +197,7 @@ export async function roomRoutes(fastify: FastifyInstance) {
         startDate: new Date(body.data.startDate),
         endDate: new Date(body.data.endDate),
         reason: body.data.reason,
+        roomCategoryIds: body.data.roomCategoryIds,
       },
     });
     return reply.status(201).send(period);

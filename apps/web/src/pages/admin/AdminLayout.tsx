@@ -5,9 +5,18 @@ import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../hooks/useApi';
 
+const LANGUAGES = [
+  { code: 'da', label: 'DA', flag: '🇩🇰' },
+  { code: 'en', label: 'EN', flag: '🇬🇧' },
+  { code: 'de', label: 'DE', flag: '🇩🇪' },
+  { code: 'es', label: 'ES', flag: '🇪🇸' },
+  { code: 'fr', label: 'FR', flag: '🇫🇷' },
+];
+
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout, refreshToken } = useAuthStore();
+  const [langOpen, setLangOpen] = React.useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,6 +30,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     ...(user?.role === 'ADMIN' ? [
       { path: '/admin/financials', label: t('admin.financials') },
       { path: '/admin/administration', label: t('admin.administration') },
+      { path: '/admin/pricing', label: t('admin.pricing') },
     ] : []),
     { path: '/admin/cleaning', label: t('admin.cleaning') },
   ];
@@ -37,6 +47,27 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user?.name}</span>
+            {/* Language switcher */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setLangOpen(v => !v)}
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', padding: '0.375rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.875rem' }}
+              >
+                {LANGUAGES.find(l => l.code === i18n.language)?.flag || '🌐'} {i18n.language.toUpperCase()}
+              </button>
+              {langOpen && (
+                <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: '4px', backgroundColor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', zIndex: 100, minWidth: '100px' }}>
+                  {LANGUAGES.map(lang => (
+                    <button key={lang.code}
+                      onClick={() => { i18n.changeLanguage(lang.code); setLangOpen(false); }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.875rem', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', color: '#333' }}
+                    >
+                      {lang.flag} {lang.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', padding: '0.375rem 0.875rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.875rem' }}>
               {t('admin.logout')}
             </button>

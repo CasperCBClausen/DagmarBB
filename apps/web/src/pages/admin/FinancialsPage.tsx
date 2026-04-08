@@ -1,14 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AdminLayout } from './AdminLayout';
 import { apiClient } from '../../hooks/useApi';
 import type { FinancialSummary } from '@dagmar/shared';
 
-const MONTHS_DA = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
-
 export default function FinancialsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [data, setData] = React.useState<FinancialSummary | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -22,9 +20,9 @@ export default function FinancialsPage() {
   if (!data) return <AdminLayout><div>{t('common.error')}</div></AdminLayout>;
 
   const monthlyData = data.revenueByMonth.map(m => ({
-    name: MONTHS_DA[m.month - 1],
-    omsætning: Math.round(m.revenue),
-    bookinger: m.bookings,
+    name: new Date(m.year, m.month - 1, 1).toLocaleDateString(i18n.language, { month: 'short', year: '2-digit' }),
+    revenue: Math.round(m.revenue),
+    bookings: m.bookings,
   }));
 
   const kpis = [
@@ -62,8 +60,8 @@ export default function FinancialsPage() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip formatter={(v: number) => [`${v.toLocaleString('da-DK')} DKK`, 'Omsætning']} />
-            <Bar dataKey="omsætning" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
+            <Tooltip formatter={(v: number) => [`${v.toLocaleString('da-DK')} DKK`, t('admin.revenue')]} />
+            <Bar dataKey="revenue" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -76,7 +74,7 @@ export default function FinancialsPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9375rem' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid rgba(0,0,0,0.08)' }}>
-              {['Værelse', 'Omsætning', 'Bookinger', 'Belægning'].map(h => (
+              {[t('admin.col_room'), t('admin.revenue'), t('admin.bookings_count'), t('admin.col_occupancy')].map(h => (
                 <th key={h} style={{ padding: '0.625rem 0.75rem', textAlign: 'left', fontWeight: 600, color: '#666', fontSize: '0.8125rem', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>

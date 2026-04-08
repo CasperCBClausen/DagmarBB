@@ -8,7 +8,7 @@ export async function financialRoutes(fastify: FastifyInstance) {
     const [bookings, rooms] = await Promise.all([
       prisma.booking.findMany({
         where: { status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] } },
-        include: { room: true },
+        include: { room: true, assignedRoom: true },
       }),
       prisma.room.findMany({ where: { isActive: true } }),
     ]);
@@ -25,28 +25,25 @@ export async function financialRoutes(fastify: FastifyInstance) {
     const totalPossibleNights = rooms.length * 365;
     const occupancyRate = totalPossibleNights > 0 ? (occupiedNights / totalPossibleNights) * 100 : 0;
 
-    // Monthly breakdown (last 12 months)
+    // Monthly breakdown (current calendar year)
+    const currentYear = new Date().getFullYear();
     const revenueByMonth = [];
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
+    for (let month = 1; month <= 12; month++) {
       const monthBookings = bookings.filter(b => {
         const d = new Date(b.checkIn);
-        return d.getFullYear() === year && d.getMonth() + 1 === month;
+        return d.getFullYear() === currentYear && d.getMonth() + 1 === month;
       });
       revenueByMonth.push({
-        year,
+        year: currentYear,
         month,
         revenue: monthBookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
         bookings: monthBookings.length,
       });
     }
 
-    // Revenue by room
+    // Revenue by room — count both roomId and assignedRoomId
     const revenueByRoom = rooms.map(room => {
-      const roomBookings = bookings.filter(b => b.roomId === room.id);
+      const roomBookings = bookings.filter(b => b.roomId === room.id || (b as any).assignedRoomId === room.id);
       const revenue = roomBookings.reduce((sum: number, b) => sum + b.totalPrice, 0);
       const roomOccupied = roomBookings.reduce((sum: number, b) => sum + b.nights, 0);
       return {
@@ -111,20 +108,22 @@ export async function financialRoutes(fastify: FastifyInstance) {
 
   // GET /financials/by-room
   fastify.get('/by-room', { preHandler: [requireAdmin] }, async () => {
-    const rooms = await prisma.room.findMany({
-      include: {
-        bookings: {
-          where: { status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] } },
-        },
-      },
-    });
+    const [rooms, allBookings] = await Promise.all([
+      prisma.room.findMany(),
+      prisma.booking.findMany({
+        where: { status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] } },
+      }),
+    ]);
 
-    return rooms.map(room => ({
-      roomId: room.id,
-      roomName: room.name,
-      revenue: room.bookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
-      bookings: room.bookings.length,
-      occupancyRate: (room.bookings.reduce((sum: number, b) => sum + b.nights, 0) / 365) * 100,
-    }));
+    return rooms.map(room => {
+      const roomBookings = allBookings.filter(b => b.roomId === room.id || b.assignedRoomId === room.id);
+      return {
+        roomId: room.id,
+        roomName: room.name,
+        revenue: roomBookings.reduce((sum: number, b) => sum + b.totalPrice, 0),
+        bookings: roomBookings.length,
+        occupancyRate: (roomBookings.reduce((sum: number, b) => sum + b.nights, 0) / 365) * 100,
+      };
+    });
   });
 }

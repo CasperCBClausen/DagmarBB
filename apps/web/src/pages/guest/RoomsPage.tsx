@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/Layout';
 import { apiClient } from '../../hooks/useApi';
@@ -7,12 +7,20 @@ import type { Room } from '@dagmar/shared';
 
 export default function RoomsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [rooms, setRooms] = React.useState<Room[]>([]);
+  const [bookingMode, setBookingMode] = React.useState<'manual' | 'autonomous'>('manual');
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    apiClient.get<Room[]>('/rooms')
-      .then(r => setRooms(r.data))
+    Promise.all([
+      apiClient.get<Room[]>('/rooms'),
+      apiClient.get<{ bookingMode: 'manual' | 'autonomous' }>('/settings'),
+    ])
+      .then(([roomsRes, settingsRes]) => {
+        setRooms(roomsRes.data);
+        setBookingMode(settingsRes.data.bookingMode);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -58,19 +66,19 @@ export default function RoomsPage() {
                       }}>{a}</span>
                     ))}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
-                      <span style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>
-                        {room.pricePerNight.toLocaleString('da-DK')} DKK
-                      </span>
-                      <span style={{ color: '#888', fontSize: '0.875rem' }}> / {t('rooms.per_night')}</span>
                       <div style={{ fontSize: '0.8125rem', color: '#888', marginTop: '0.25rem' }}>
                         {t('rooms.max_guests', { count: room.maxGuests })}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
                       <Link to={`/rooms/${room.slug}`} className="btn-secondary">{t('rooms.availability')}</Link>
-                      <Link to={`/book/${room.slug}`} className="btn-primary">{t('rooms.book_now')}</Link>
+                      {bookingMode === 'manual' ? (
+                        <Link to="/about" className="btn-primary">{t('rooms.book_now')}</Link>
+                      ) : (
+                        <Link to={`/book/${room.slug}`} className="btn-primary">{t('rooms.book_now')}</Link>
+                      )}
                     </div>
                   </div>
                 </div>

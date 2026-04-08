@@ -5,9 +5,9 @@ import { apiClient } from '../../hooks/useApi';
 import type { CleaningStatus } from '@dagmar/shared';
 
 const STATE_CONFIG = {
-  CLEAN: { label: 'Rent', color: '#10b981', bg: '#d1fae5', emoji: '✓' },
-  NEEDS_CLEANING: { label: 'Skal rengøres', color: '#ef4444', bg: '#fee2e2', emoji: '!' },
-  IN_PROGRESS: { label: 'I gang', color: '#f59e0b', bg: '#fef3c7', emoji: '↻' },
+  CLEAN: { color: '#10b981', bg: '#d1fae5', emoji: '✓' },
+  NEEDS_CLEANING: { color: '#ef4444', bg: '#fee2e2', emoji: '!' },
+  IN_PROGRESS: { color: '#f59e0b', bg: '#fef3c7', emoji: '↻' },
 };
 
 export default function CleaningPage() {
@@ -40,7 +40,7 @@ export default function CleaningPage() {
     <AdminLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.75rem' }}>{t('admin.cleaning')}</h1>
-        <button onClick={load} className="btn-secondary" style={{ fontSize: '0.875rem' }}>↻ Opdater</button>
+        <button onClick={load} className="btn-secondary" style={{ fontSize: '0.875rem' }}>↻ {t('admin.refresh')}</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
@@ -61,11 +61,11 @@ export default function CleaningPage() {
                   fontSize: '0.8125rem',
                   fontWeight: 600,
                 }}>
-                  {cfg.emoji} {cfg.label}
+                  {cfg.emoji} {t(`admin.${s.state === 'CLEAN' ? 'clean' : s.state === 'NEEDS_CLEANING' ? 'needs_cleaning' : 'in_progress'}`)}
                 </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '1.25rem' }}>
-                Opdateret: {new Date(s.updatedAt).toLocaleString('da-DK')}
+                {t('admin.last_updated')}: {new Date(s.updatedAt).toLocaleString()}
               </p>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {s.state !== 'CLEAN' && (
@@ -85,7 +85,7 @@ export default function CleaningPage() {
                     className="btn-secondary"
                     style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem' }}
                   >
-                    Start rengøring
+                    {t('admin.start_cleaning')}
                   </button>
                 )}
                 {s.state !== 'NEEDS_CLEANING' && (
@@ -102,7 +102,7 @@ export default function CleaningPage() {
           );
         })}
         {statuses.length === 0 && (
-          <p style={{ color: '#888', padding: '2rem' }}>Ingen rengøringsstatusser tilgængelige.</p>
+          <p style={{ color: '#888', padding: '2rem' }}>{t('admin.no_cleaning_statuses')}</p>
         )}
       </div>
     </AdminLayout>

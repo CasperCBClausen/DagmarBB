@@ -30,7 +30,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Dagmar B&B bruger kameraet til at scanne rengørings-QR-koder."
+          "cameraPermission": "Dagmar B&B bruger kameraet til at scanne rengørings-QR-koder.",
+          "microphonePermission": false
         }
       ]
     ],

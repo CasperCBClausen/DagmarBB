@@ -9,6 +9,9 @@ const LANGUAGES = [
   { code: 'en', label: 'EN', flag: '🇬🇧' },
   { code: 'de', label: 'DE', flag: '🇩🇪' },
   { code: 'es', label: 'ES', flag: '🇪🇸' },
+  { code: 'fr', label: 'FR', flag: '🇫🇷' },
+  { code: 'nl', label: 'NL', flag: '🇳🇱' },
+  { code: 'it', label: 'IT', flag: '🇮🇹' },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -42,7 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="nav-link">{t('nav.home')}</Link>
-            <Link to="/rooms" className="nav-link">{t('nav.rooms')}</Link>
+            <Link to="/book" className="nav-link">{t('nav.book')}</Link>
             <Link to="/about" className="nav-link">{t('nav.about')}</Link>
             {user && ['ADMIN', 'CLEANER'].includes(user.role) && (
               <>
@@ -58,6 +61,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* My Booking link */}
+            <Link to="/my-booking" className="nav-link hidden md:inline" style={{ fontSize: '0.875rem' }}>{t('nav.my_booking')}</Link>
+
             {/* Language switcher */}
             <div className="relative">
               <button
@@ -84,9 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {user ? (
               <button onClick={handleLogout} className="btn-secondary text-sm px-3 py-1">{t('admin.logout')}</button>
-            ) : (
-              <Link to="/book/dagmar-suite" className="btn-primary text-sm">{t('nav.book')}</Link>
-            )}
+            ) : null}
           </div>
         </div>
       </header>
@@ -109,7 +113,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.75rem', fontSize: '1rem' }}>Links</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem', fontSize: '0.875rem' }}>
-              <Link to="/rooms" style={{ color: 'var(--color-primary)' }}>{t('nav.rooms')}</Link>
+              <Link to="/book" style={{ color: 'var(--color-primary)' }}>{t('nav.book')}</Link>
               <Link to="/about" style={{ color: 'var(--color-primary)' }}>{t('nav.about')}</Link>
               <Link to="/login" style={{ color: '#999', fontSize: '0.8rem' }}>{t('nav.login')}</Link>
             </div>

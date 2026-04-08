@@ -6,12 +6,23 @@ import en from './locales/en/translation.json';
 import da from './locales/da/translation.json';
 import de from './locales/de/translation.json';
 import es from './locales/es/translation.json';
+import fr from './locales/fr/translation.json';
+import nl from './locales/nl/translation.json';
+import it from './locales/it/translation.json';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: { en: { translation: en }, da: { translation: da }, de: { translation: de }, es: { translation: es } },
+    resources: {
+      en: { translation: en },
+      da: { translation: da },
+      de: { translation: de },
+      es: { translation: es },
+      fr: { translation: fr },
+      nl: { translation: nl },
+      it: { translation: it },
+    },
     fallbackLng: 'en',
     detection: {
       order: ['localStorage', 'navigator'],
