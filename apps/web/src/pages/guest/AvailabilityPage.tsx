@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/Layout';
 import { CurrencyConverter } from '../../components/CurrencyConverter';
+import { DatePickerInput } from '../../components/DatePickerInput';
 import { apiClient } from '../../hooks/useApi';
 import type { RoomSlotAvailabilityResponse, RateOption, Booking } from '@dagmar/shared';
 
@@ -315,12 +316,12 @@ export default function AvailabilityPage() {
             <div style={{ fontSize: '0.875rem', color: '#555' }}>
               <p style={{ marginBottom: '0.5rem' }}>
                 <strong>{t('confirm.check_in')}:</strong>{' '}
-                {new Date(checkIn).toLocaleDateString('da-DK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date(checkIn).toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 <span style={{ color: '#888', marginLeft: '0.5rem', fontSize: '0.8125rem' }}>{t('booking.arrival_from')} {arrivalTime}</span>
               </p>
               <p style={{ marginBottom: '0.5rem' }}>
                 <strong>{t('confirm.check_out')}:</strong>{' '}
-                {new Date(checkOut).toLocaleDateString('da-DK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date(checkOut).toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 <span style={{ color: '#888', marginLeft: '0.5rem', fontSize: '0.8125rem' }}>{t('booking.departure_before')} {departureTime}</span>
               </p>
               <p style={{ marginBottom: '0.5rem' }}>
@@ -392,16 +393,16 @@ export default function AvailabilityPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
                 <div>
                   <label style={labelStyle}>{t('booking.check_in')}</label>
-                  <input type="date" className="input-field" value={checkIn} min={tomorrow}
-                    onChange={e => setCheckIn(e.target.value)} required />
+                  <DatePickerInput value={checkIn} min={tomorrow} lang={i18n.language}
+                    onChange={setCheckIn} required />
                   <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.25rem' }}>
                     {t('booking.arrival_from')} {arrivalTime}
                   </p>
                 </div>
                 <div>
                   <label style={labelStyle}>{t('booking.check_out')}</label>
-                  <input type="date" className="input-field" value={checkOut} min={checkIn || tomorrow}
-                    onChange={e => setCheckOut(e.target.value)} required />
+                  <DatePickerInput value={checkOut} min={checkIn || tomorrow} lang={i18n.language}
+                    onChange={setCheckOut} required />
                   <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.25rem' }}>
                     {t('booking.departure_before')} {departureTime}
                   </p>
@@ -455,9 +456,9 @@ export default function AvailabilityPage() {
                 {t('booking.available_rates')}
               </h2>
               <p style={{ color: '#666', fontSize: '0.9375rem' }}>
-                {new Date(checkIn).toLocaleDateString('da-DK', { day: 'numeric', month: 'long' })}
+                {new Date(checkIn).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })}
                 {' → '}
-                {new Date(checkOut).toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {new Date(checkOut).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}
                 {' · '}
                 <strong>{t(nights === 1 ? 'booking.nights' : 'booking.nights_plural', { count: nights })}</strong>
               </p>
@@ -578,9 +579,9 @@ export default function AvailabilityPage() {
             {/* Summary banner */}
             <div className="card" style={{ padding: '1rem 1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '0.875rem', color: '#555', marginBottom: '0.5rem' }}>
-                {new Date(checkIn).toLocaleDateString('da-DK', { day: 'numeric', month: 'short' })}
+                {new Date(checkIn).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}
                 {' – '}
-                {new Date(checkOut).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {new Date(checkOut).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}
                 <span style={{ color: '#888', margin: '0 0.5rem' }}>·</span>
                 {t(nights === 1 ? 'booking.nights' : 'booking.nights_plural', { count: nights })}
               </div>
@@ -740,13 +741,15 @@ function RoomSlotCard({
   activeCatId, selectedRate, onToggle, onPickCategory, onSelectRate,
 }: RoomSlotCardProps) {
   const { t, i18n } = useTranslation();
-  const [showBreakdown, setShowBreakdown] = React.useState(false);
   const pickName = (name: string, translations?: Record<string, string>) =>
     translations?.[i18n.language] ?? translations?.['en'] ?? name;
 
   const activeCat = room.categories.find(c => c.roomCategoryId === activeCatId) ?? room.categories[0];
   const displayRates = activeCat ? deduplicateRates(activeCat.rates) : [];
-  const cheapest = displayRates.length ? displayRates[0].pricePerNight : 0;
+  const cheapestRate = displayRates.length ? displayRates[0] : null;
+  const cheapest = cheapestRate
+    ? Math.min(...(cheapestRate.dayPrices?.length ? cheapestRate.dayPrices.map(d => d.price) : [cheapestRate.pricePerNight]))
+    : 0;
   const dayPrices = selectedRate?.dayPrices ?? [];
   const pricesVary = dayPrices.length > 1 && dayPrices.some(d => d.price !== dayPrices[0].price);
 
@@ -891,9 +894,20 @@ function RoomSlotCard({
                     )}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: isChosen ? 'var(--color-primary)' : '#333' }}>
-                      {rate.pricePerNight.toLocaleString('da-DK')} DKK/{t('booking.per_night').replace('DKK / ', '')}
-                    </div>
+                    {(() => {
+                      const rateMin = Math.min(...(rate.dayPrices?.length ? rate.dayPrices.map(d => d.price) : [rate.pricePerNight]));
+                      const rateVaries = rate.dayPrices?.length ? rate.dayPrices.some(d => d.price !== rate.dayPrices![0].price) : false;
+                      return (
+                        <>
+                          {rateVaries && (
+                            <div style={{ fontSize: '0.6875rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{t('booking.from')}</div>
+                          )}
+                          <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: isChosen ? 'var(--color-primary)' : '#333' }}>
+                            {rateMin.toLocaleString('da-DK')} DKK/{t('booking.per_night').replace('DKK / ', '')}
+                          </div>
+                        </>
+                      );
+                    })()}
                     <div style={{ fontSize: '0.75rem', color: '#aaa' }}>
                       {(rate.totalPrice + rate.chargesTotal).toLocaleString('da-DK')} DKK {t('booking.nights_plural', { count: nights }).replace('{{count}} ', '')}
                     </div>
@@ -903,30 +917,26 @@ function RoomSlotCard({
             })}
           </div>
 
-          {/* Per-night price breakdown toggle */}
+          {/* Per-night price breakdown */}
           {dayPrices.length > 1 && (
-            <div style={{ marginTop: '0.625rem' }}>
-              <button type="button" onClick={() => setShowBreakdown(v => !v)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)', fontSize: '0.8125rem', padding: 0 }}>
-                {showBreakdown ? '▲' : '▼'} {t('booking.price_breakdown')}
-              </button>
-              {showBreakdown && (
-                <div style={{ margin: '0.5rem 0', padding: '0.625rem 0.75rem', backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: '6px', fontSize: '0.8125rem' }}>
-                  {dayPrices.map((d, i) => {
-                    const date = new Date(d.date);
-                    return (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1875rem 0', borderBottom: i < dayPrices.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                        <span style={{ color: '#555' }}>
-                          {date.toLocaleDateString('da-DK', { weekday: 'short', day: 'numeric', month: 'short' })}
-                        </span>
-                        <span style={{ fontWeight: d.price !== dayPrices[0].price ? 600 : 400, color: d.price !== dayPrices[0].price ? 'var(--color-primary)' : '#666' }}>
-                          {d.price.toLocaleString('da-DK')} DKK
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            <div style={{ marginTop: '0.75rem', padding: '0.625rem 0.75rem', backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: '6px', fontSize: '0.8125rem' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#888', marginBottom: '0.375rem' }}>
+                {t('booking.price_breakdown')}
+              </div>
+              {dayPrices.map((d, i) => {
+                const date = new Date(d.date);
+                const isMin = pricesVary && d.price === Math.min(...dayPrices.map(x => x.price));
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1875rem 0', borderBottom: i < dayPrices.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                    <span style={{ color: '#555' }}>
+                      {date.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </span>
+                    <span style={{ fontWeight: pricesVary ? 500 : 400, color: isMin ? 'var(--color-primary)' : '#666' }}>
+                      {d.price.toLocaleString('da-DK')} DKK
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

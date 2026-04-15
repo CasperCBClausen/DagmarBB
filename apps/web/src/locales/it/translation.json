@@ -16,7 +16,9 @@
     "about_text": "Il Dagmar B&B si trova nel centro storico di Ribe, una delle città medievali meglio conservate della Danimarca. Le nostre camere accuratamente restaurate fondono secoli di storia con il comfort moderno.",
     "rooms_title": "Le nostre camere",
     "ribe_title": "Scopri Ribe",
-    "ribe_text": "Ribe fu fondata intorno al 700 d.C. ed è la città più antica della Scandinavia. Il centro medievale ben conservato, la magnifica cattedrale e le tortuose strade acciottolate rendono Ribe una destinazione unica."
+    "ribe_text": "Ribe fu fondata intorno al 700 d.C. ed è la città più antica della Scandinavia. Il centro medievale ben conservato, la magnifica cattedrale e le tortuose strade acciottolate rendono Ribe una destinazione unica.",
+    "gallery_title": "Uno sguardo all'interno",
+    "gallery_subtitle": "Clicca su una foto per esplorare"
   },
   "rooms": {
     "title": "Le nostre camere",
@@ -99,10 +101,18 @@
     "history_title": "La nostra storia",
     "history_text": "Situato in un edificio amorevolmente restaurato nel cuore del centro storico di Ribe, il Dagmar B&B offre un soggiorno intimo e autentico in una delle città più storiche della Scandinavia.",
     "ribe_title": "Ribe",
+    "ribe_text": "Ribe fu fondata intorno al 700 d.C. ed è la città più antica della Scandinavia. La città è famosa per la sua straordinaria architettura medievale, l'imponente Cattedrale di Ribe e il pittoresco centro storico con strade acciottolate e case a graticcio. Il Centro Vichingo di Ribe e il museo storico offrono affascinanti spunti sul notevole passato della città.",
     "contact_title": "Contattaci",
+    "address_label": "Indirizzo",
+    "email_label": "E-mail",
+    "phone_label": "Telefono",
     "address": "Dagmarsgade 12, 6760 Ribe",
     "email": "info@dagmarbb.dk",
     "phone": "+45 12 34 56 78"
+  },
+  "footer": {
+    "contact": "Contatto",
+    "country": "Danimarca"
   },
   "admin": {
     "financials": "Finanze",
@@ -300,7 +310,22 @@
     "category_name_placeholder": "Nome categoria...",
     "booking_not_found": "Prenotazione non trovata",
     "charge_name_placeholder": "Pulizie finali, cane, letto extra...",
-    "col_occupancy": "Occupazione"
+    "col_occupancy": "Occupazione",
+    "invoice_actions": "Azioni",
+    "make_invoice": "Crea fattura",
+    "copy_invoice_fields": "Copia campi fattura",
+    "copied": "Copiato!",
+    "invoice_title": "Fattura",
+    "invoice_number": "N. fattura",
+    "invoice_date": "Data fattura",
+    "due_date": "Data di scadenza",
+    "line_items": "Voci",
+    "additional_services": "Servizi aggiuntivi",
+    "discount_line": "Sconto {{percent}}% ({{code}})",
+    "total": "Totale",
+    "print_invoice": "Stampa",
+    "invoice_bill_to": "Fatturare a",
+    "invoice_footer": "Grazie per il suo soggiorno presso Dagmar B&B."
   },
   "my_booking": {
     "title": "La Mia Prenotazione",

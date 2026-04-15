@@ -41,6 +41,61 @@ export default function AdminBookingDetailPage() {
   // Status change
   const [savingStatus, setSavingStatus] = React.useState(false);
 
+  // Actions dropdown
+  const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+  const actionsRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!actionsOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setActionsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [actionsOpen]);
+
+  const copyInvoiceFields = () => {
+    if (!booking) return;
+    const fmtDate = (d: string) => new Date(d).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const fmt = (n: number) => n.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const today = new Date().toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const lines: string[] = [];
+    lines.push(`Fakturanr.: ${booking.bookingRef}`);
+    lines.push(`Fakturadato: ${today}`);
+    lines.push(`Forfaldsdato: ${fmtDate(booking.checkOut)}`);
+    lines.push('');
+    lines.push('DEBITOR');
+    lines.push(`Navn: ${booking.guestName}`);
+    lines.push(`E-mail: ${booking.guestEmail}`);
+    lines.push(`Telefon: ${booking.guestPhone ?? '-'}`);
+    lines.push('');
+    lines.push('LINJER');
+    for (const br of booking.bookingRooms ?? []) {
+      const categoryName = br.roomCategory?.name ?? 'Værelse';
+      const roomNightsCost = br.pricePerNight * booking.nights;
+      const impliedCharges = br.subtotal - roomNightsCost;
+      lines.push(`${categoryName} × ${booking.nights} nætter @ ${fmt(br.pricePerNight)} kr./nat\t${fmt(roomNightsCost)} kr.`);
+      if (impliedCharges > 0.01) {
+        lines.push(`Tillægsydelser\t${fmt(impliedCharges)} kr.`);
+      }
+    }
+    if ((booking.discountAmount ?? 0) > 0) {
+      lines.push(`Rabat ${booking.discountPercent}% (${booking.discountCode})\t-${fmt(booking.discountAmount!)} kr.`);
+    }
+    lines.push('');
+    lines.push(`I ALT\t${fmt(booking.totalPrice)} kr.`);
+
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+    setActionsOpen(false);
+  };
+
   // Messages
   const [messages, setMessages] = React.useState<BookingMessage[]>([]);
   const [msgText, setMsgText] = React.useState('');
@@ -136,6 +191,39 @@ export default function AdminBookingDetailPage() {
           <span style={{ fontSize: '0.8125rem', padding: '0.3rem 0.75rem', borderRadius: '4px', backgroundColor: `${statusColors[booking.status] ?? '#888'}22`, color: statusColors[booking.status] ?? '#888', fontWeight: 600 }}>
             {t(`booking_status.${booking.status}`, { defaultValue: booking.status })}
           </span>
+          <div ref={actionsRef} style={{ marginLeft: 'auto', position: 'relative' }}>
+            <button
+              onClick={() => setActionsOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.4rem 0.875rem', border: '1px solid #e0e0e0', borderRadius: '6px', background: 'white', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500 }}
+            >
+              {t('admin.invoice_actions')} ▾
+            </button>
+            {actionsOpen && (
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 6px)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '200px', zIndex: 100, overflow: 'hidden' }}>
+                <button
+                  onClick={() => { window.open(`/admin/booking/${id}/invoice`, '_blank'); setActionsOpen(false); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  🧾 {t('admin.make_invoice')}
+                </button>
+                <button
+                  onClick={copyInvoiceFields}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', borderTop: '1px solid #f0f0f0' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  📋 {t('admin.copy_invoice_fields')}
+                </button>
+              </div>
+            )}
+            {copied && (
+              <span style={{ position: 'absolute', right: 0, top: 'calc(100% + 6px)', background: '#10b981', color: 'white', padding: '0.375rem 0.75rem', borderRadius: '6px', fontSize: '0.8125rem', whiteSpace: 'nowrap', zIndex: 100 }}>
+                ✓ {t('admin.copied')}
+              </span>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>

@@ -16,6 +16,7 @@ const CleaningPage = React.lazy(() => import('./pages/admin/CleaningPage'));
 const BookingMockupPage = React.lazy(() => import('./pages/test/BookingMockupPage'));
 const MyBookingPage = React.lazy(() => import('./pages/guest/MyBookingPage'));
 const AdminBookingDetailPage = React.lazy(() => import('./pages/admin/AdminBookingDetailPage'));
+const InvoicePage = React.lazy(() => import('./pages/admin/InvoicePage'));
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const user = useAuthStore(s => s.user);
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/admin/cleaning" element={<RequireStaff><CleaningPage /></RequireStaff>} />
           <Route path="/my-booking" element={<MyBookingPage />} />
           <Route path="/admin/booking/:id" element={<RequireAdmin><AdminBookingDetailPage /></RequireAdmin>} />
+          <Route path="/admin/booking/:id/invoice" element={<RequireAdmin><InvoicePage /></RequireAdmin>} />
           <Route path="/mockup" element={<BookingMockupPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

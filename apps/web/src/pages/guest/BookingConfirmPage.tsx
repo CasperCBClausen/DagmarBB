@@ -7,7 +7,7 @@ import type { Booking } from '@dagmar/shared';
 
 export default function BookingConfirmPage() {
   const { ref } = useParams<{ ref: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [booking, setBooking] = React.useState<Booking | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -35,8 +35,8 @@ export default function BookingConfirmPage() {
             {[
               [t('confirm.ref'), booking.bookingRef],
               ['Værelse', booking.room?.name],
-              [t('confirm.check_in'), new Date(booking.checkIn).toLocaleDateString('da-DK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
-              [t('confirm.check_out'), new Date(booking.checkOut).toLocaleDateString('da-DK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
+              [t('confirm.check_in'), new Date(booking.checkIn).toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
+              [t('confirm.check_out'), new Date(booking.checkOut).toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
               [t('confirm.total'), `${booking.totalPrice.toLocaleString('da-DK')} DKK`],
             ].map(([label, value]) => (
               <tr key={label} style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>

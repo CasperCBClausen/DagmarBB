@@ -16,7 +16,9 @@
     "about_text": "Dagmar B&B is nestled in the historic old town of Ribe — one of Denmark's oldest and best-preserved medieval cities. Our carefully restored rooms blend centuries of history with modern comfort.",
     "rooms_title": "Our Rooms",
     "ribe_title": "Discover Ribe",
-    "ribe_text": "Ribe was founded around 700 AD and is the oldest town in Scandinavia. The well-preserved medieval city center, the magnificent Cathedral, and the winding cobblestone streets make Ribe a unique destination."
+    "ribe_text": "Ribe was founded around 700 AD and is the oldest town in Scandinavia. The well-preserved medieval city center, the magnificent Cathedral, and the winding cobblestone streets make Ribe a unique destination.",
+    "gallery_title": "A Glimpse Inside",
+    "gallery_subtitle": "Click any photo to explore"
   },
   "rooms": {
     "title": "Our Rooms",
@@ -99,10 +101,18 @@
     "history_title": "Our Story",
     "history_text": "Located in a lovingly restored building in the heart of Ribe's old town, Dagmar B&B offers an intimate and authentic stay in one of Scandinavia's most historic cities.",
     "ribe_title": "About Ribe",
+    "ribe_text": "Ribe was founded around 700 AD and is the oldest town in Scandinavia. The well-preserved medieval city centre, the magnificent Cathedral, and the winding cobblestone streets make Ribe a unique destination. The Ribe Viking Centre and the local history museum offer fascinating insights into the city's remarkable past.",
     "contact_title": "Contact Us",
+    "address_label": "Address",
+    "email_label": "Email",
+    "phone_label": "Phone",
     "address": "Dagmarsgade 12, 6760 Ribe",
     "email": "info@dagmarbb.dk",
     "phone": "+45 12 34 56 78"
+  },
+  "footer": {
+    "contact": "Contact",
+    "country": "Denmark"
   },
   "admin": {
     "financials": "Financials",
@@ -300,7 +310,22 @@
     "category_name_placeholder": "Category name...",
     "booking_not_found": "Booking not found",
     "charge_name_placeholder": "Final cleaning, dog, extra bed...",
-    "col_occupancy": "Occupancy"
+    "col_occupancy": "Occupancy",
+    "invoice_actions": "Actions",
+    "make_invoice": "Make invoice",
+    "copy_invoice_fields": "Copy invoice fields",
+    "copied": "Copied!",
+    "invoice_title": "Invoice",
+    "invoice_number": "Invoice no.",
+    "invoice_date": "Invoice date",
+    "due_date": "Due date",
+    "line_items": "Items",
+    "additional_services": "Additional services",
+    "discount_line": "Discount {{percent}}% ({{code}})",
+    "total": "Total",
+    "print_invoice": "Print",
+    "invoice_bill_to": "Bill to",
+    "invoice_footer": "Thank you for staying at Dagmar B&B."
   },
   "my_booking": {
     "title": "My Booking",

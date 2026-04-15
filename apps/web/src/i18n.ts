@@ -32,4 +32,17 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.lang = lng;
+});
+
+// Set initial lang on the html element
+if (i18n.isInitialized) {
+  document.documentElement.lang = i18n.language;
+} else {
+  i18n.on('initialized', () => {
+    document.documentElement.lang = i18n.language;
+  });
+}
+
 export default i18n;

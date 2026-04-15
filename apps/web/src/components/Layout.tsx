@@ -101,10 +101,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)', marginBottom: '0.75rem' }}>Dagmar B&B</h3>
-            <p style={{ fontSize: '0.875rem', color: '#666' }}>Dagmarsgade 12<br />6760 Ribe, Danmark</p>
+            <p style={{ fontSize: '0.875rem', color: '#666' }}>Dagmarsgade 12<br />6760 Ribe, {t('footer.country')}</p>
           </div>
           <div>
-            <h4 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.75rem', fontSize: '1rem' }}>Kontakt</h4>
+            <h4 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.75rem', fontSize: '1rem' }}>{t('footer.contact')}</h4>
             <p style={{ fontSize: '0.875rem', color: '#666' }}>
               <a href="mailto:info@dagmarbb.dk" style={{ color: 'var(--color-primary)' }}>info@dagmarbb.dk</a><br />
               <a href="tel:+4512345678" style={{ color: 'var(--color-primary)' }}>+45 12 34 56 78</a>
@@ -120,7 +120,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: '#999' }}>
-          © {new Date().getFullYear()} Dagmar B&B · Ribe, Danmark
+          © {new Date().getFullYear()} Dagmar B&B · Ribe, {t('footer.country')}
         </div>
       </footer>
 
