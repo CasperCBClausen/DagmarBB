@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/Layout';
 
+const BASE = import.meta.env.BASE_URL; // e.g. '/' locally, '/DagmarBB/' on GitHub Pages
+
 const GALLERY_PHOTOS = [
-  { src: '/photos/apartment_livingroom1.jpg', gridArea: '1 / 1 / 3 / 2' },
-  { src: '/photos/apartment_bedroom1.jpg',    gridArea: '1 / 2 / 2 / 3' },
-  { src: '/photos/bathroom_firstfloor1.jpg',  gridArea: '1 / 3 / 2 / 4' },
-  { src: '/photos/room1.jpg',                 gridArea: '2 / 2 / 3 / 3' },
-  { src: '/photos/hallway1.jpg',              gridArea: '2 / 3 / 4 / 4' },
-  { src: '/photos/single_bedroom.jpg',        gridArea: '3 / 1 / 4 / 2' },
-  { src: '/photos/kitchenette1.jpg',          gridArea: '3 / 2 / 4 / 3' },
-  { src: '/photos/bathroom_secondfloor1.jpg', gridArea: '4 / 1 / 5 / 2' },
+  { src: `${BASE}photos/apartment_livingroom1.jpg`, gridArea: '1 / 1 / 3 / 2' },
+  { src: `${BASE}photos/apartment_bedroom1.jpg`,    gridArea: '1 / 2 / 2 / 3' },
+  { src: `${BASE}photos/bathroom_firstfloor1.jpg`,  gridArea: '1 / 3 / 2 / 4' },
+  { src: `${BASE}photos/room1.jpg`,                 gridArea: '2 / 2 / 3 / 3' },
+  { src: `${BASE}photos/hallway1.jpg`,              gridArea: '2 / 3 / 4 / 4' },
+  { src: `${BASE}photos/single_bedroom.jpg`,        gridArea: '3 / 1 / 4 / 2' },
+  { src: `${BASE}photos/kitchenette1.jpg`,          gridArea: '3 / 2 / 4 / 3' },
+  { src: `${BASE}photos/bathroom_secondfloor1.jpg`, gridArea: '4 / 1 / 5 / 2' },
 ];
 
 export default function HomePage() {
@@ -45,7 +47,7 @@ export default function HomePage() {
         overflow: 'hidden',
       }}>
         <img
-          src="/photos/dagmarbb_view1.jpg"
+          src={`${BASE}photos/dagmarbb_view1.jpg`}
           alt="Dagmar B&B"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
